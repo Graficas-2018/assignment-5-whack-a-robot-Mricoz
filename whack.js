@@ -8,41 +8,21 @@ flamingo = null,
 stork = null,
 group = null,
 orbitControls = null;
-
-var game = false;
-var gameDuration = 10;
-var score = 0;
-var timer = new THREE.Clock();
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(), CLICKED;
+var game = false;
+var robot_mixer = {};
 var robotsAnimations = {};
 var robots = [];
 var robotsMixers = [];
+var clock = new THREE.Clock();
+var score = 0;
 var robotCount = 0;
+var gameDuration = 68;
+var duration = 20000; // ms
+var currentTime = Date.now();
 
-// Start and restart everything
-function startGame() {
-  game = true;
-  document.getElementById("start-btn").style.display = "none";
-  // console.log("Game started");
-}
-
-function restartGame() {
-    // Remove remaining robots
-    for (i of robots) {
-        if (!i.destroyed) {
-            scene.remove(i);
-        }
-    }
-    // everything to 0
-    game = true;
-    robots = [];
-    score = 0;
-    timer = new THREE.Clock()
-    robotsMixers = [];
-    robotCount = 0;
-    document.getElementById("start-btn").style.display = "none";
-}
+var animation = "idle";
 
 function changeAnimation(animation_text){
     animation = animation_text;
@@ -59,16 +39,14 @@ function changeAnimation(animation_text){
 }
 
 function createDeadAnimation(){
-
+    console.log("DEADANIMATION");
 }
 
 function loadFBX(){
     var loader = new THREE.FBXLoader();
-    loader.load( '../models/Robot/robot_idle.fbx', function ( object )
-    {
-        robot_mixer["idle"] = new THREE.AnimationMixer( scene );
+    loader.load( '../models/Robot/robot_idle.fbx', function ( object ){
         object.scale.set(0.02, 0.02, 0.02);
-        object.position.y -= 10;
+        object.position.y -= 4;
         object.traverse( function ( child ) {
             if ( child.isMesh ) {
                 child.castShadow = true;
@@ -76,67 +54,111 @@ function loadFBX(){
             }
         } );
         robot_idle = object;
-        // scene.add( robot_idle );
+        //scene.add( robot_idle );
+        //createDeadAnimation();
 
-        createDeadAnimation();
         robotsAnimations.idle = object.animations[0];
 
-        // robot_mixer["idle"].clipAction( object.animations[ 0 ], robot_idle ).play();
-
-        // loader.load( '../models/Robot/robot_atk.fbx', function ( object )
-        // {
-        //     robot_mixer["attack"] = new THREE.AnimationMixer( scene );
-        //     robot_mixer["attack"].clipAction( object.animations[ 0 ], robot_idle ).play();
-        // } );
-
-        loader.load( '../models/Robot/robot_run.fbx', function ( object ){
-            // robot_mixer["run"] = new THREE.AnimationMixer( scene );
-            // robot_mixer["run"].clipAction( object.animations[ 0 ], robot_idle ).play();
+        loader.load( '../models/Robot/robot_run.fbx', function ( object )
+        {
             robotsAnimations.run = object.animations[0];
         } );
-
-        // loader.load( '../models/Robot/robot_walk.fbx', function ( object )
-        // {
-        //     robot_mixer["walk"] = new THREE.AnimationMixer( scene );
-        //     robot_mixer["walk"].clipAction( object.animations[ 0 ], robot_idle ).play();
-        // } );
     } );
 }
 
-function animate() {
+// Agrega los robots
+function addRobot(){
+    console.log("Add robot");
+    // New Robot
+    robotCount++;
+    var newRobot = cloneFbx(robot_idle);
+    newRobot.destroyed = false;
+    newRobot.escaped = false;
+    robots.push(newRobot);
+    // Animation
+    var newRobotMixer = new THREE.AnimationMixer(newRobot);
+    newRobotMixer.clipAction(robotsAnimations.run).play();
+    robotsMixers.push(newRobotMixer);
+    // Position
+    newRobot.position.x = Math.random() * (60 + 60) - 60;
+    newRobot.position.y = Math.random() * (-45 + -45) - 25;
+    newRobot.position.z = Math.random() * (60 + 60) - 60;
+    newRobot.rotation.x = 0;
 
-    // var now = Date.now();
-    // var deltat = now - currentTime;
-    // currentTime = now;
-    //
-    // if(robot_idle && robot_mixer["walk"]){
-    //     robot_mixer["walk"].update(deltat * 0.001);
-    //     while(robot_idle.position.y < 7 || robot_idle.position.y > -5 ){
-    //         robot_idle.translateY(-(deltat * .005));
-    //         if(robot_idle.position.y < -5 || robot_idle.position.y > -10){
-    //             robot_idle.translateY(deltat * .005);
-    //         }
-    //     }
-    // }
-    //
-    // if(animation =="dead")
-    // {
-    //     KF.update();
-    // }
-    // console.log("animating");
+    scene.add(newRobot);
+}
+
+function animate() {
+    if(clock.elapsedTime > gameDuration || !game){
+        document.getElementById("score").innerHTML = "GAME";
+        document.getElementById("timer").innerHTML = "OVER";
+        return;
+    }
+
+    var delta = clock.getDelta();
+    for (var robotMixer of robotsMixers) {
+        robotMixer.update(delta);
+    }
+
+    // console.log("ANimate");
+    // Mover los robots
+    for (robot of robots) {
+        if((robot.position.y > 50) && !robot.escaped && !robot.destroyed){
+            robot.escaped = true;
+            scene.remove(robot);
+            robotCount--; // para que sean infinitos
+        } else {
+            robot.translateY(delta * 15);
+        }
+    }
+
+    // Añadir robots
+    if(robot_idle && robotCount <= 15){
+        addRobot();
+    }
+
+    // Update score and time
+    document.getElementById("score").innerHTML = "Score: " + score;
+    document.getElementById("timer").innerHTML = "Time left: " + Math.round(gameDuration - clock.elapsedTime) + " s";
 }
 
 function run() {
     requestAnimationFrame(function() { run(); });
+    // Render the scene
+    renderer.render( scene, camera );
+    // Spin the cube for next frame
+    animate();
+}
 
-        // Render the scene
-        renderer.render( scene, camera );
+// Empieza el juego y run
+function startGame(){
+    for (i of robots) {
+        if (!i.destroyed && !i.escaped) {
+            scene.remove(i); // Erase
+        }
+    }
+    game = true;
+    score = 0;
+    clock = new THREE.Clock()
+    robots = [];
+    robotsMixers = [];
+    robotCount = 0;
 
-        // Spin the cube for next frame
-        animate();
-
-        // // Update the camera controller
-        // orbitControls.update();
+    run();
+}
+// Reinicia el juego
+function restartGame() {
+    for (i of robots) {
+        if (!i.destroyed && !i.escaped) {
+            scene.remove(i); // Erase
+        }
+    }
+    game = true;
+    score = 0;
+    clock = new THREE.Clock()
+    robots = [];
+    robotsMixers = [];
+    robotCount = 0;
 }
 
 function setLightColor(light, r, g, b){
@@ -172,7 +194,7 @@ function createScene(canvas) {
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.set(0, 6, 50);
+    camera.position.set(-15, 6, 30);
     scene.add(camera);
 
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -226,4 +248,6 @@ function createScene(canvas) {
     // Now add the group to our scene
     scene.add( root );
 
+    // document.addEventListener('mousedown', onDocumentMouseDown);
+    // window.addEventListener( 'resize', onWindowResize);
 }

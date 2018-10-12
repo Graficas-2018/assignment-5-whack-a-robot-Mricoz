@@ -7,30 +7,25 @@
 <link rel="stylesheet" href="../libs/colorpicker/css/colorpicker.css" />
 <link rel="stylesheet" href="../css/main.css" />
 <link rel="stylesheet" href="../css/threejsshadows.css" />
+
 <script src="../libs/jquery-3.3.1/jquery-3.3.1.js"></script>
 <script src="../libs/jquery-ui/jquery-ui.js"></script>
+
 <script src="../libs/three.js/three.js"></script>
 <script src="../libs/three.js/controls/OrbitControls.js"></script>
 <script src="../libs/colorpicker/js/colorpicker.js"></script>
+
 <script src="../libs/three.js/loaders/GLTFLoader.js"></script>
+
 <script src="../libs/three.js/loaders/inflate.min.js"></script>
 <script src="../libs/three.js/loaders/FBXLoader.js"></script>
+
 <script src="../libs/keyframe.js/keyframe.js"></script>
+<script src="../libs/three.js/utils/cloneFBX.js"></script>
+
 <script src="whack.js"></script>
-<!-- <script type="text/javascript">
-function initControls()
-{
-    $("input[name=animation]").click(
-        function() {
-            var id = $("input[name=animation]:checked").attr('value');
-            changeAnimation(id);
-        }
-    );
 
-}
-</script> -->
-
-<!-- <script type="text/javascript">
+<script type="text/javascript">
 
 	$(document).ready(
 			function() {
@@ -40,47 +35,41 @@ function initControls()
 				// create the scene
 				createScene(canvas);
 
-				// // initialize the controls
-				// initControls();
+				$("#start-btn").click(function() { startGame(); });
+				$("#restart-btn").click(function() { restartGame(); });
 
-		        // Run the run loop
-		        run();
+				// run();
 			}
 	);
-</script> -->
 
-<script type="text/javascript">
-	$(document).ready(
-        function() {
-            var canvas = document.getElementById("webglcanvas");
-            // create the scene
-			createScene(canvas);
-		    // Run the run loop
-		    run();
-            $("#start-btn").click(function() {
-                if(!game){
-                    startGame();
-                } else {
-                    restartGame();
-                }
-            });
-        }
-	);
 </script>
 
 </head>
 
 <body>
+	<style>
+	#score{
+		color: #000;
+		width: auto;
+		font-size: 16px;
+		padding-left: 10px;
+	}
 
-<!-- <div id="container">
-    <canvas id="webglcanvas" width=800 height=600></canvas>
-	<div id="title">Tarea Whack a Robot</div>
-</div> -->
+	#timer{
+		width: auto;
+		color: #000;
+		font-size: 16px;
+		margin-bottom: 10px;
+		padding-left: 10px;
+	}
+	</style>
 <div id="container">
     <canvas id="webglcanvas" width=800 height=600></canvas>
-    <div id="title">Tarea Whack a Robot</div>
-    <div id="score"> Score: 0 </div>
-    <a id="start-btn" href="#">Start</a>
+	<div id="title">Tarea Whack a Robot</div>
+	<div id="score">Score: 0</div>
+    <div id="timer">Time: 0</div>
+	<button id='start-btn'>Start Game</button>
+	<button id='restart-btn'>Restart Game</button>
 </div>
 </body>
 </html>
