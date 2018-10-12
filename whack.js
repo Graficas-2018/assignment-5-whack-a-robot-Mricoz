@@ -66,28 +66,6 @@ function loadFBX(){
     } );
 }
 
-// Agrega los robots
-function addRobot(){
-    console.log("Add robot");
-    // New Robot
-    robotCount++;
-    var newRobot = cloneFbx(robot_idle);
-    newRobot.destroyed = false;
-    newRobot.escaped = false;
-    robots.push(newRobot);
-    // Animation
-    var newRobotMixer = new THREE.AnimationMixer(newRobot);
-    newRobotMixer.clipAction(robotsAnimations.run).play();
-    robotsMixers.push(newRobotMixer);
-    // Position
-    newRobot.position.x = Math.random() * (60 + 60) - 60;
-    newRobot.position.y = Math.random() * (-45 + -45) - 25;
-    newRobot.position.z = Math.random() * (60 + 60) - 60;
-    newRobot.rotation.x = 0;
-
-    scene.add(newRobot);
-}
-
 function animate() {
     if(clock.elapsedTime > gameDuration || !game){
         document.getElementById("score").innerHTML = "GAME";
@@ -108,7 +86,7 @@ function animate() {
             scene.remove(robot);
             robotCount--; // para que sean infinitos
         } else {
-            robot.translateY(delta * 15);
+            robot.translateY(delta * 12);
         }
     }
 
@@ -141,7 +119,7 @@ function startGame(){
     score = 0;
     clock = new THREE.Clock()
     robots = [];
-    robotsMixers = [];
+    //robotsMixers = [];
     robotCount = 0;
 
     run();
@@ -159,6 +137,30 @@ function restartGame() {
     robots = [];
     robotsMixers = [];
     robotCount = 0;
+}
+
+// Agrega los robots
+function addRobot(){
+    //console.log("Add robot");
+    // New Robot
+    robotCount++;
+    var newRobot = cloneFbx(robot_idle);
+    newRobot.id = robotCount;
+    // console.log(newRobot.id);
+    newRobot.destroyed = false;
+    newRobot.escaped = false;
+    robots.push(newRobot);
+    // Animation
+    var newRobotMixer = new THREE.AnimationMixer(newRobot);
+    newRobotMixer.clipAction(robotsAnimations.run).play();
+    robotsMixers.push(newRobotMixer);
+    // Position
+    newRobot.position.x = Math.random() * (60 + 60) - 60;
+    newRobot.position.y = Math.random() * (-45 + -45) - 25;
+    newRobot.position.z = Math.random() * (60 + 60) - 60;
+    newRobot.rotation.x = 0;
+
+    scene.add(newRobot);
 }
 
 function setLightColor(light, r, g, b){
@@ -194,7 +196,7 @@ function createScene(canvas) {
 
     // Add  a camera so we can view the scene
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
-    camera.position.set(-15, 6, 30);
+    camera.position.set(-15, 15, 115);
     scene.add(camera);
 
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -202,19 +204,19 @@ function createScene(canvas) {
     // Create a group to hold all the objects
     root = new THREE.Object3D;
 
-    spotLight = new THREE.SpotLight (0xffffff);
-    spotLight.position.set(-30, 8, -10);
-    spotLight.target.position.set(-2, 0, -2);
-    root.add(spotLight);
-
-    spotLight.castShadow = true;
-
-    spotLight.shadow.camera.near = 1;
-    spotLight.shadow.camera.far = 200;
-    spotLight.shadow.camera.fov = 45;
-
-    spotLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
-    spotLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
+    // spotLight = new THREE.SpotLight (0xffffff);
+    // spotLight.position.set(-30, 8, -10);
+    // spotLight.target.position.set(-2, 0, -2);
+    // root.add(spotLight);
+    //
+    // spotLight.castShadow = true;
+    //
+    // spotLight.shadow.camera.near = 1;
+    // spotLight.shadow.camera.far = 200;
+    // spotLight.shadow.camera.fov = 45;
+    //
+    // spotLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
+    // spotLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
 
     ambientLight = new THREE.AmbientLight ( 0x888888 );
     root.add(ambientLight);
@@ -248,6 +250,29 @@ function createScene(canvas) {
     // Now add the group to our scene
     scene.add( root );
 
-    // document.addEventListener('mousedown', onDocumentMouseDown);
-    // window.addEventListener( 'resize', onWindowResize);
+    document.addEventListener('mousedown', onDocumentMouseDown);
+}
+
+// Interaction
+function onDocumentMouseDown(event) {
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    raycaster.setFromCamera( mouse, camera ); // raycaster
+
+    var intersects = raycaster.intersectObjects( scene.children, true );
+    if ( intersects.length > 0 ){
+        CLICKED = intersects[ 0 ].object;
+        var id = CLICKED.parent.id;
+        //console.log(CLICKED.parent.id);
+        //console.log(id);
+        if(!CLICKED.parent.destroyed){
+            CLICKED.parent.destroyed = true;
+            //console.log(CLICKED.parent.destroyed);
+            score++;
+            //console.log(score);
+            scene.remove(CLICKED.parent);
+        }
+    }
 }
