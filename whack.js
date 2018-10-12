@@ -18,7 +18,7 @@ var robotsMixers = [];
 var clock = new THREE.Clock();
 var score = 0;
 var robotCount = 0;
-var gameDuration = 68;
+var gameDuration = 48;
 var duration = 20000; // ms
 var currentTime = Date.now();
 
@@ -59,17 +59,17 @@ function loadFBX(){
 
         robotsAnimations.idle = object.animations[0];
 
-        loader.load( '../models/Robot/robot_run.fbx', function ( object )
-        {
+        loader.load( '../models/Robot/robot_run.fbx', function ( object ){
             robotsAnimations.run = object.animations[0];
-        } );
-    } );
+        });
+    });
 }
 
 function animate() {
     if(clock.elapsedTime > gameDuration || !game){
         document.getElementById("score").innerHTML = "GAME";
         document.getElementById("timer").innerHTML = "OVER";
+        document.getElementById("title").innerHTML = "FINAL SCORE = " + score;
         return;
     }
 
@@ -91,7 +91,7 @@ function animate() {
     }
 
     // Añadir robots
-    if(robot_idle && robotCount <= 15){
+    if(robot_idle && robotCount <= 20){
         addRobot();
     }
 
@@ -137,6 +137,7 @@ function restartGame() {
     robots = [];
     robotsMixers = [];
     robotCount = 0;
+    document.getElementById("title").innerHTML = "Tarea Whack a Robot";
 }
 
 // Agrega los robots
@@ -145,7 +146,6 @@ function addRobot(){
     // New Robot
     robotCount++;
     var newRobot = cloneFbx(robot_idle);
-    newRobot.id = robotCount;
     // console.log(newRobot.id);
     newRobot.destroyed = false;
     newRobot.escaped = false;
@@ -264,9 +264,6 @@ function onDocumentMouseDown(event) {
     var intersects = raycaster.intersectObjects( scene.children, true );
     if ( intersects.length > 0 ){
         CLICKED = intersects[ 0 ].object;
-        var id = CLICKED.parent.id;
-        //console.log(CLICKED.parent.id);
-        //console.log(id);
         if(!CLICKED.parent.destroyed){
             CLICKED.parent.destroyed = true;
             //console.log(CLICKED.parent.destroyed);
