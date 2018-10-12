@@ -38,10 +38,6 @@ function changeAnimation(animation_text){
     }
 }
 
-function createDeadAnimation(){
-    console.log("DEADANIMATION");
-}
-
 function loadFBX(){
     var loader = new THREE.FBXLoader();
     loader.load( '../models/Robot/robot_idle.fbx', function ( object ){
@@ -55,10 +51,11 @@ function loadFBX(){
         } );
         robot_idle = object;
         //scene.add( robot_idle );
-        //createDeadAnimation();
 
         robotsAnimations.idle = object.animations[0];
-
+        loader.load( '../models/Robot/robot_atk.fbx', function ( object ) {
+            robotsAnimations.die = object.animations[0];
+        } );
         loader.load( '../models/Robot/robot_run.fbx', function ( object ){
             robotsAnimations.run = object.animations[0];
         });
@@ -269,6 +266,7 @@ function onDocumentMouseDown(event) {
             //console.log(CLICKED.parent.destroyed);
             score++;
             //console.log(score);
+            //robotsMixers.clipAction(robotsAnimations.run).play();
             scene.remove(CLICKED.parent);
         }
     }
