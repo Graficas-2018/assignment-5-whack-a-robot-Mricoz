@@ -252,9 +252,14 @@ function createScene(canvas) {
 
 // Interaction
 function onDocumentMouseDown(event) {
+    console.log("ASSAD");
     event.preventDefault();
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    // mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    // mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    var size = renderer.getSize();
+    mouse.x = ( event.clientX / size.width ) * 2 - 1;
+    mouse.y = - ( event.clientY / size.height ) * 2 + 1;
 
     raycaster.setFromCamera( mouse, camera ); // raycaster
 

@@ -11,3 +11,10 @@ Rubric:
 3. The user can interact correctly with the 3D model, and when an interaction happens, the *dead* animation is played. The model is then erased from the scene after a little while.
 4. A high score and timer are correctly implemented.
 5. UI feedback messages (to start or restart the game) are correctly displayed.
+
+**NOTES**
+
+1. There was an issue with the mouse clicks. You used the window aspect ratio instead of the canvas aspect ratio, that causes the mouse position to be calculated incorrectly.
+2. No dead animation was created.
+
+**Grade: 80**
